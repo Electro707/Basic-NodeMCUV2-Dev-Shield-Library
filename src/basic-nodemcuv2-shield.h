@@ -9,6 +9,8 @@
 #ifndef BASIC_NODEMCU_V2_DEV_SHIELD
 #define BASIC_NODEMCU_V2_DEV_SHIELD
 
+#include <Arduino.h>
+
 // This library should only be included if using a NodeMCU V2 (as it's for
 // keyword definitions and examples. We can't directly check if the board
 // is specifically a V2, but we can do the next best thing and check if it's
@@ -33,5 +35,7 @@
 #define SHIELD_BT1 16
 #define SHIELD_BT2 5
 #define SHIELD_BT3 10
+
+void shieldSetPinout(void);
 
 #endif
