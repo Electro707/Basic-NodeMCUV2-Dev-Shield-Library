@@ -1,11 +1,9 @@
-// THIS EXAMPLES IS A WORK-IN-PROGRESS!!!
-// PLEASE DON'T USE THIS YET
 /** 
  *  Serial Command Examples for the E707 Basic NodeMCU-V2 Shield
  *  
  *  This program accepts a serial command to turn on or off segments and
  *  other cool stuff. The baud rate on the serial terminal should be
- *  set to 9600 if it's not.
+ *  set to 115200 if it's not.
  *  
  *  The command syntax goes as follows:
  *  - aX -> Turn on segment X (from A to G)
@@ -20,18 +18,37 @@
 
 #include "basic-nodemcuv2-shield.h"
 
+#define DEBOUNCE_DELAY 20
+
+// IMPORTANT:
+// If the dev board doesn't use an LM35 (check the marking on the TO-92
+// package), then comment out the LM35 line (by adding // to the beginning
+// of it) and un-comment the right temperature sensor (by removing the //
+// in the beginning of it).
+LM35 temp_sensor;
+//LM36 temp_sensor;
+
 // Create the read buffer. We expect a maximum of 5 characters
 char read_buffer[5];
 
-int seg_pin;
-int pwm_amount;
+// Internal variables
+int seg_pin, pwm_amount, analog_mv;
+float temp_c, temp_f;
+// Flag to determine if we are checking for buttons state change
+bool checking_bt_press = false;
+// Store the previous button pressed in an array
+bool prev_bt_state[3];
+// Have an array of all button's pins so we can use them in a for loop
+uint8_t shield_bt_arr[] = {SHIELD_BT1, SHIELD_BT2, SHIELD_BT3};
 
 void setup(){
    // Use the library function to set the proper pinmode
    shieldSetPinout();
-   // TODO: Set the analog range to 0->255
+   memset(prev_bt_state, 0, 3);
+   // Set the "analog" write range to 0->255
+   analogWriteRange(255);
    // Start the serial terminal and print out a start message
-   Serial.begin(9600);
+   Serial.begin(115200);
    Serial.println("Welcome to the Serial Command Examples");
    Serial.println("Type in a command according to the syntax (see program comments) to do stuff");
 }
@@ -59,11 +76,53 @@ void loop(){
         seg_pin = get_segment_pin(read_buffer[1]);
         if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
         pwm_amount = strtol(&read_buffer[2], NULL, 10);
-        // TODO: Add PWM data validation
+        if(pwm_amount < 0 || pwm_amount > 255){break;}
         analogWrite(seg_pin, pwm_amount);
+        break;
+      case 'v':
+      case 'V':
+        analog_mv = analogRead(A0);
+        analog_mv = analog_mv * 3300 / 1024;
+        Serial.print("Voltage Value (mV) = ");
+        Serial.println(analog_mv);
+        break;
+      case 't':
+      case 'T':
+        temp_c = temp_sensor.getTemperatureC();
+        temp_f = temp_sensor.getTemperatureF();
+        Serial.print("Current Temperature is = ");
+        Serial.print(temp_c); Serial.print(" C, ");
+        Serial.print(temp_f); Serial.println("F");
+        break;
+      case 'b':
+      case 'B':
+        if(checking_bt_press == false){
+          checking_bt_press = true;
+          Serial.println("Started checking for button presses");
+        } else {
+          checking_bt_press = false;
+          Serial.println("Stopped checking for button presses");
+        }
+        update_all_bt_state();
         break;
      }
    }
+ }
+ // Button checking loop
+ if(checking_bt_press){
+  bool bt_state;
+  for(int i=0;i<3;i++){
+    bt_state = digitalRead(shield_bt_arr[i]);
+    if(bt_state != prev_bt_state[i]){
+      prev_bt_state[i] = bt_state;
+      if(bt_state){
+        Serial.print("Depressed button "); Serial.println(i+1);
+      } else {
+        Serial.print("Pressed button "); Serial.println(i+1);
+      }
+      delay(DEBOUNCE_DELAY);
+    }
+  }
  }
 }
 
@@ -99,5 +158,15 @@ int get_segment_pin(char segment_text){
       Serial.println("Invalid Segment Character");
       // Nothing matches, so we returns nothing
       return -1;
+  }
+}
+
+// Function that updates the previous button state to the current one.
+// This is called so that when we state checking for button pressed, we
+// don't immediatly get a message if the previou state is different than
+// the current one
+void update_all_bt_state(void){
+  for(int i=0;i<3;i++){
+    prev_bt_state[i] = digitalRead(shield_bt_arr[i]);
   }
 }

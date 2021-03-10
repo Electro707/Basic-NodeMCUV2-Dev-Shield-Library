@@ -38,4 +38,40 @@
 
 void shieldSetPinout(void);
 
+/**
+ * Base class for any temperature sensor. Temp sensors call up this class and
+ * change the offset and divide_by variables. This should eliminate copy-and-paste
+ * code
+ */
+class _TempSensor{
+    public:
+        float getTemperatureC(void);
+        float getTemperatureF(void);
+    protected:
+        int offset;
+        int divide_by;
+};
+
+/**
+ * The LM35 temp-sensor class
+ */
+class LM35: public _TempSensor{
+    public:
+        LM35(){
+            offset = 0;
+            divide_by = 10;
+        }
+};
+
+/**
+ * The LM36 temp-sensor class
+ */
+class LM36: public _TempSensor{
+    public:
+        LM36(){
+            offset = 500;
+            divide_by = 10;
+        }
+};
+
 #endif
