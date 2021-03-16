@@ -13,7 +13,8 @@
 #include "basic-nodemcuv2-shield.h"
 
 void setup() {
-  pinMode(SHIELD_LEDB, OUTPUT);
+  // Use the library function to set the proper pinmode
+  shieldSetPinout();
 }
 
 // The loop function runs over and over again forever

@@ -16,10 +16,8 @@
 uint8_t segments[] = {SHIELD_SEGA, SHIELD_SEGB, SHIELD_SEGC, SHIELD_SEGD, SHIELD_SEGE, SHIELD_SEGF, SHIELD_SEGG};
 
 void setup() {
-  // Set all segments as output
-  for(int i=0;i<SEGMENT_AMOUNT;i++){
-    pinMode(segments[i], OUTPUT);
-  }
+  // Use the library function to set the proper pinmode
+  shieldSetPinout();
   // Change the analog write range to 0->255
   analogWriteRange(255);
 }
@@ -38,5 +36,15 @@ void loop() {
       analogWrite(segments[i], p);
       delay(DELAY_TIME);
     }
+  }
+  // Then fade in and out all segments at once
+  for(int p=0;p<255;p++){
+    for(int i=0;i<SEGMENT_AMOUNT;i++){analogWrite(segments[i], p);}
+    delay(DELAY_TIME);
+  }
+  // Fade the same segment into fully OFF
+  for(int p=254;p>=0;p--){
+    for(int i=0;i<SEGMENT_AMOUNT;i++){analogWrite(segments[i], p);}
+    delay(DELAY_TIME);
   }
 } 
