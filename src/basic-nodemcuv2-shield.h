@@ -36,7 +36,16 @@
 #define SHIELD_BT2 5
 #define SHIELD_BT3 10
 
+/**
+ * \brief Set the pin mode (INPUT or OUTPUT) for all relavent pins for the shield's periferals.
+ */
 void shieldSetPinout(void);
+
+/**
+ * \brief Set a digit (between 0 and 9) on the 7 segment display of the shield.
+ * \param digit The digit to display, between 0 and 9.
+ */
+void shieldDisplayDigit(int digit);
 
 /**
  * Base class for any temperature sensor. Temp sensors call up this class and

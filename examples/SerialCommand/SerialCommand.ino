@@ -6,8 +6,11 @@
  *  set to 115200 if it's not.
  *  
  *  The command syntax goes as follows:
+ *  - h -> Show a help menu
+ *  - help -> Same as h
  *  - aX -> Turn on segment X (from A to G)
  *  - dX -> Turn off segment X (from A to G)
+ *  - nX -> Write a number on the 7 segment display (from 0 to 9)
  *  - pXY -> PWM segment X (from A to G) with duty cycle Y (from 1 to 255)
  *  - v -> Read back the voltage value on the analog pin (connected to the
  *         LM34 or similar temperature sensor.
@@ -29,10 +32,10 @@ LM35 temp_sensor;
 //LM36 temp_sensor;
 
 // Create the read buffer. We expect a maximum of 5 characters
-char read_buffer[5];
+char read_buffer[10];
 
 // Internal variables
-int seg_pin, pwm_amount, analog_mv;
+int seg_pin, pwm_amount, analog_mv, digit_numb;
 float temp_c, temp_f;
 // Flag to determine if we are checking for buttons state change
 bool checking_bt_press = false;
@@ -44,6 +47,7 @@ uint8_t shield_bt_arr[] = {SHIELD_BT1, SHIELD_BT2, SHIELD_BT3};
 void setup(){
    // Use the library function to set the proper pinmode
    shieldSetPinout();
+   // Set the previous button state array to 0
    memset(prev_bt_state, 0, 3);
    // Set the "analog" write range to 0->255
    analogWriteRange(255);
@@ -55,56 +59,69 @@ void setup(){
 // The infinite loop
 void loop(){
  if(Serial.available()){
-   int numb_read = Serial.readBytesUntil('\n', read_buffer, 5);
+   int numb_read = Serial.readBytesUntil('\n', read_buffer, 10);
    // Just in case, handle when there is no data 
    if(numb_read != 0){
-     switch(read_buffer[0]){
-      case 'a':
-      case 'A':
-        seg_pin = get_segment_pin(read_buffer[1]);
-        if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
-        digitalWrite(seg_pin, HIGH);
-        break;
-      case 'd':
-      case 'D':
-        seg_pin = get_segment_pin(read_buffer[1]);
-        if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
-        digitalWrite(seg_pin, LOW);
-        break;
-      case 'p':
-      case 'P':
-        seg_pin = get_segment_pin(read_buffer[1]);
-        if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
-        pwm_amount = strtol(&read_buffer[2], NULL, 10);
-        if(pwm_amount < 0 || pwm_amount > 255){break;}
-        analogWrite(seg_pin, pwm_amount);
-        break;
-      case 'v':
-      case 'V':
-        analog_mv = analogRead(A0);
-        analog_mv = analog_mv * 3300 / 1024;
-        Serial.print("Voltage Value (mV) = ");
-        Serial.println(analog_mv);
-        break;
-      case 't':
-      case 'T':
-        temp_c = temp_sensor.getTemperatureC();
-        temp_f = temp_sensor.getTemperatureF();
-        Serial.print("Current Temperature is = ");
-        Serial.print(temp_c); Serial.print(" C, ");
-        Serial.print(temp_f); Serial.println("F");
-        break;
-      case 'b':
-      case 'B':
-        if(checking_bt_press == false){
-          checking_bt_press = true;
-          Serial.println("Started checking for button presses");
-        } else {
-          checking_bt_press = false;
-          Serial.println("Stopped checking for button presses");
-        }
-        update_all_bt_state();
-        break;
+     if(strcmp("help", read_buffer) == 0 || read_buffer[0] == 'h' || read_buffer[0] == 'H'){
+      print_help();
+     }
+     else{
+       switch(read_buffer[0]){
+        case 'a':
+        case 'A':
+          seg_pin = get_segment_pin(read_buffer[1]);
+          if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
+          digitalWrite(seg_pin, HIGH);
+          break;
+        case 'd':
+        case 'D':
+          seg_pin = get_segment_pin(read_buffer[1]);
+          if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
+          digitalWrite(seg_pin, LOW);
+          break;
+        case 'p':
+        case 'P':
+          seg_pin = get_segment_pin(read_buffer[1]);
+          if(seg_pin == -1){break;}   // Don't procede if the pin is invalid
+          pwm_amount = strtol(&read_buffer[2], NULL, 10);
+          if(pwm_amount < 0 || pwm_amount > 255){break;}
+          analogWrite(seg_pin, pwm_amount);
+          break;
+        case 'n':
+        case 'N':
+          digit_numb = read_buffer[1]-0x30;
+          if(digit_numb > 9 || digit_numb < 0){
+            Serial.println("Wrong digit. Needs to be between 0 and 9");
+          }
+          shieldDisplayDigit(digit_numb);
+          break;
+        case 'v':
+        case 'V':
+          analog_mv = analogRead(A0);
+          analog_mv = analog_mv * 3300 / 1024;
+          Serial.print("Voltage Value (mV) = ");
+          Serial.println(analog_mv);
+          break;
+        case 't':
+        case 'T':
+          temp_c = temp_sensor.getTemperatureC();
+          temp_f = temp_sensor.getTemperatureF();
+          Serial.print("Current Temperature is = ");
+          Serial.print(temp_c); Serial.print(" C, ");
+          Serial.print(temp_f); Serial.println("F");
+          break;
+        case 'b':
+        case 'B':
+          if(checking_bt_press == false){
+            checking_bt_press = true;
+            Serial.println("Started checking for button presses");
+          } else {
+            checking_bt_press = false;
+            Serial.println("Stopped checking for button presses");
+          }
+          update_all_bt_state();
+          break;
+       }
      }
    }
  }
@@ -169,4 +186,16 @@ void update_all_bt_state(void){
   for(int i=0;i<3;i++){
     prev_bt_state[i] = digitalRead(shield_bt_arr[i]);
   }
+}
+
+void print_help(void){
+  Serial.println("** HELP MENU **");
+  Serial.println("h or help -> Print out this help menu");
+  Serial.println("aX -> Turn on segment X (from A to G)");
+  Serial.println("dX -> Turn off segment X (from A to G)");
+  Serial.println("pXY -> PWM segment X (from A to G) with duty cycle Y (from 1 to 255)");
+  Serial.println("nX -> Write a number on the 7 segment display (from 0 to 9)");
+  Serial.println("v -> Read back the voltage value on the analog pin (connected to the LM34 or similar temperature sensor.");
+  Serial.println("t -> Read the temperature from the on-board LM34 (or similar) temperature sensor (connected to the analog pin)");
+  Serial.println("b -> Start/Stop reporting if a button is pressed or depressed");
 }
