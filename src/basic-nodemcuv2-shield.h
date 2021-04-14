@@ -44,25 +44,60 @@ void shieldSetPinout(void);
 /**
  * \brief Set a digit (between 0 and 9) on the 7 segment display of the shield.
  * \param digit The digit to display, between 0 and 9.
+ * 
+ * Example:
+ * \code
+ * #include "basic-nodemcuv2-shield.h"
+ * void setup(){
+ *   shieldSetPinout();
+ * }
+ * void loop(){
+ *    // Display a 6 on the 7-segment display
+ *    shieldDisplayDigit(6);
+ *    delay(500);
+ *    // Display a 9 on the 7-segment display
+ *    shieldDisplayDigit(9);
+ * }
+ * \endcode
  */
 void shieldDisplayDigit(int digit);
 
 /**
- * Base class for any temperature sensor. Temp sensors call up this class and
+ * \brief Base class for any temperature sensor. Temp sensors call up this class and
  * change the offset and divide_by variables. This should eliminate copy-and-paste
  * code
  */
 class _TempSensor{
     public:
+        /**
+         * \brief Function to read the temperature of a temp-sensor and return it in Celcius
+         * \return The temperature in Celcius
+         */
         float getTemperatureC(void);
+         /**
+         * \brief Function to read the temperature of a temp-sensor and return it in Fahrenheit
+         * \return The temperature in Fahrenheit
+         */
         float getTemperatureF(void);
     protected:
+        /**
+         * \brief The voltage offset in mV from the temperature sensor
+         * 
+         * This number is substracted from the read analog input value (in mV) before dividing by \ref divide_by.
+         */
         int offset;
+        /**
+         * \brief The voltage division in mV from the temperature sensor
+         * 
+         * This number is what the input voltage in mV is divided by after substracting \ref offset.
+         */
         int divide_by;
 };
 
 /**
- * The LM35 temp-sensor class
+ * \brief The LM35 temp-sensor class
+ * \details A class to read the temperature from an LM35 temperature sensor. 
+ * \see See the _TempSensor documentation for how to use this class
  */
 class LM35: public _TempSensor{
     public:
@@ -73,7 +108,9 @@ class LM35: public _TempSensor{
 };
 
 /**
- * The LM36 temp-sensor class
+ * \brief The LM36 temp-sensor class
+ * \details A class to read the temperature from an LM36 temperature sensor. 
+ * \see See the _TempSensor documentation for how to use this class
  */
 class LM36: public _TempSensor{
     public:
