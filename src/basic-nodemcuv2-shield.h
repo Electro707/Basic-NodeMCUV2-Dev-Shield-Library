@@ -1,10 +1,15 @@
 /**
- * Basic NodeMCU_V2 Development Shield Library
- * By Electro707
+ * \mainpage
+ * \brief This library is to be used with the E707 Basic NodeMCUV2 Shield, providing examples, pin definitions, and some helper functions
  * 
- * This "library" is mostly to provide pin definitions and some examples
- * for the Basic NodeMCU_V2 Development Shield
+ * \image html DSC06198.jpg width=25%
+ *
+ * \section Installation Installation 
+ * To install the library, download the library as a ZIP file (downloaded from the Github repository), then add it to the Arduin Library Manager with the `Add .ZIP Library` options
  * 
+ * \section GitHub GitHub Repo
+ * <a href="https://github.com/Electro707/Basic-NodeMCUV2-Dev-Shield-Library">Link to the library's Github repository</a>
+ *
  */
 #ifndef BASIC_NODEMCU_V2_DEV_SHIELD
 #define BASIC_NODEMCU_V2_DEV_SHIELD
@@ -20,20 +25,33 @@
 #endif
 
 // Define the 7-segment pins
-#define SHIELD_SEGA 15
+/** The pin connected to Segment A of the 7-Seg display */
+#define SHIELD_SEGA 15  
+/** The pin connected to Segment B of the 7-Seg display */
 #define SHIELD_SEGB 13
+/** The pin connected to Segment C of the 7-Seg display */
 #define SHIELD_SEGC 12
+/** The pin connected to Segment D of the 7-Seg display */
 #define SHIELD_SEGD 4
+/** The pin connected to Segment E of the 7-Seg display */
 #define SHIELD_SEGE 0
+/** The pin connected to Segment F of the 7-Seg display */
 #define SHIELD_SEGG 2
+/** The pin connected to Segment G of the 7-Seg display */
 #define SHIELD_SEGF 14
 // Define the RGB LED's pins
+/** The pin connected to the Red LED */
 #define SHIELD_LEDR SHIELD_SEGA
+/** The pin connected to the Green LED */
 #define SHIELD_LEDG SHIELD_SEGD
+/** The pin connected to the Blue LED */
 #define SHIELD_LEDB SHIELD_SEGG
 // Define the button's pins
+/** The pin connected to Button 1 */
 #define SHIELD_BT1 16
+/** The pin connected to Button 2 */
 #define SHIELD_BT2 5
+/** The pin connected to Button 3 */
 #define SHIELD_BT3 10
 
 /**

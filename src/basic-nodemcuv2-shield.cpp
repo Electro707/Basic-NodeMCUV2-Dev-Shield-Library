@@ -1,6 +1,12 @@
 /**
- *
- */ 
+ * Basic NodeMCU_V2 Development Shield Library
+ * By Electro707
+ * 
+ * This "library" is mostly to provide pin definitions and some examples
+ * for the Basic NodeMCU_V2 Development Shield
+ * 
+ * Updated on 2021-04-21
+ */
 
 #include <basic-nodemcuv2-shield.h>
 
